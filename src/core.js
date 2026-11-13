@@ -87,12 +87,12 @@ broker.onEvent((ev) => {
 
 // ---------- hooks ----------
 export function useFeed() {
-  useSyncExternalStore(feed.subscribeUi, feed.getUiVersion);
+  useSyncExternalStore(feed.subscribeUi, feed.getUiVersion, feed.getUiVersion);
   return feed;
 }
 
 export function useBroker() {
-  useSyncExternalStore(broker.subscribe, broker.getVersion);
+  useSyncExternalStore(broker.subscribe, broker.getVersion, broker.getVersion);
   return broker;
 }
 

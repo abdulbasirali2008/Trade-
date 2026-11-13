@@ -33,6 +33,7 @@ export class MarketFeed {
     this.books = {};
     this.sims = {};
     this.lastLive = {};
+    this.candleSource = {};
     this.status = { crypto: 'connecting', forex: 'sim', detail: '' };
     this.listeners = { quote: new Set(), book: new Set(), bar: new Set(), ui: new Set() };
     this.uiVersion = 0;
@@ -342,19 +343,26 @@ export class MarketFeed {
   async getCandles(symbolId, tfId, limit = 500) {
     const sym = getSym(symbolId);
     const tf = tfById(tfId);
+    const key = `${symbolId}|${tfId}`;
     if (sym.market === 'crypto') {
       try {
         const bars = await this._binanceKlines(sym, tf, limit);
-        if (bars.length) return bars;
+        if (bars.length) { this.candleSource[key] = 'live'; return bars; }
       } catch (e) { /* fall through to simulation */ }
     } else if (this.tdKey) {
       try {
         const bars = await this._twelveSeries(sym, tf, limit);
-        if (bars.length) return bars;
+        if (bars.length) { this.candleSource[key] = 'live'; return bars; }
       } catch (e) { /* fall through to simulation */ }
     }
+    this.candleSource[key] = 'sim';
     const q = this.quotes[symbolId];
     return genHistory(sym, q ? q.last : sym.simPrice, tf.sec, limit, Date.now() / 1000, 7);
+  }
+
+  /** True when the candles last loaded for this symbol and timeframe came from a real market. */
+  candlesAreReal(symbolId, tfId) {
+    return this.candleSource[`${symbolId}|${tfId}`] === 'live';
   }
 
   /** Human-readable data source for the UI. */

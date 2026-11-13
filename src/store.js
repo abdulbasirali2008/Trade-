@@ -26,4 +26,4 @@ export function createStore(initial, storageKey = null) {
   };
 }
 
-export const useStore = (store) => useSyncExternalStore(store.subscribe, store.get);
+export const useStore = (store) => useSyncExternalStore(store.subscribe, store.get, store.get);
